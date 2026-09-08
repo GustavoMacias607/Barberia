@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="Barberia.Api/Barberia.Api.csproj" Id="d49621b9-fc3d-45b9-b8c5-468b7e896d08" />
+  <Project Path="Barberia.Application/Barberia.Application.csproj" Id="62e3e8ca-19e9-4b5d-be9e-db01b1c55291" />
+  <Project Path="Barberia.Domain/Barberia.Domain.csproj" />
+  <Project Path="Barberia.Infrastructure/Barberia.Infrastructure.csproj" Id="14f5be4d-bdc9-4011-b9d8-c5ecdf963627" />
+  <Project Path="Barberia.Tests/Barberia.Tests.csproj" Id="e9f617d7-fe53-448f-9be3-817616ff6983" />
+  <Project Path="Barberia.Web/Barberia.Web.csproj" Id="f12ccca7-5c8c-4c29-b10d-92580e2320fe" />
+</Solution>
