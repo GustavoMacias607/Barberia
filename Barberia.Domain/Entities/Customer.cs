@@ -16,4 +16,10 @@ public class Customer
         Phone = phone;
         CreatedAt = DateTime.Now;
     }
+
+    public void Update(string name, string phone)
+    {
+        Name = name;
+        Phone = phone;
+    }
 }

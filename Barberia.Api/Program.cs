@@ -1,5 +1,8 @@
+using Barberia.Application.Interfaces.Repositories;
 using Barberia.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Barberia.Infrastructure.Repositories;
+using Barberia.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<BarberiaDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<CustomerService>();
 
 var app = builder.Build();
 
