@@ -17,6 +17,11 @@ public class Barber
         CreatedAt = DateTime.Now;
     }
 
+    public void Update(string name)
+    {
+        Name = name;
+    }
+
     public void Deactivate()
     {
         IsActive = false;

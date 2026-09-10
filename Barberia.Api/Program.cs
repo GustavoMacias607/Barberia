@@ -19,6 +19,9 @@ builder.Services.AddDbContext<BarberiaDbContext>(options =>
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<CustomerService>();
 
+builder.Services.AddScoped<IBarberRepository, BarberRepository>();
+builder.Services.AddScoped<BarberService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
