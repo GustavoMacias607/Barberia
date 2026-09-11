@@ -10,7 +10,7 @@ public class WorkingHourConfiguration : IEntityTypeConfiguration<WorkingHour>
     {
         builder.Property(x => x.DayOfWeek).HasConversion<byte>();
         builder.HasIndex(x => new { x.BarberId, x.DayOfWeek });
-        builder.HasOne<Barber>()
+        builder.HasOne(x => x.Barber)
             .WithMany()
             .HasForeignKey(x => x.BarberId)
             .OnDelete(DeleteBehavior.NoAction);
