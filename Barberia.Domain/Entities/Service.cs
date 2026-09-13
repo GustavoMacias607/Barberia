@@ -22,6 +22,14 @@ public class Service
         CreatedAt = DateTime.Now;
     }
 
+    public void Update(string name, decimal price, int durationMinutes, string? description = null)
+    {
+        Name = name;
+        Price = price;
+        Description = description;
+        DurationMinutes = durationMinutes;
+    }
+
     public void Deactivate()
     {
         IsActive = false;
@@ -32,4 +40,3 @@ public class Service
         IsActive = true;
     }
 }
-
