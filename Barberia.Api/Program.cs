@@ -25,6 +25,9 @@ builder.Services.AddScoped<BarberService>();
 builder.Services.AddScoped<IWorkingHourRepository, WorkingHourRepository>();
 builder.Services.AddScoped<WorkingHourService>();
 
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+builder.Services.AddScoped<ServiceService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
