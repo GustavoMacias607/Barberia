@@ -1,8 +1,10 @@
 using Barberia.Application.Interfaces.Repositories;
-using Barberia.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Barberia.Infrastructure.Repositories;
+using Barberia.Application.Interfaces.Transactions;
 using Barberia.Application.Services;
+using Barberia.Infrastructure.Persistence;
+using Barberia.Infrastructure.Repositories;
+using Barberia.Infrastructure.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,11 @@ builder.Services.AddScoped<WorkingHourService>();
 
 builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 builder.Services.AddScoped<ServiceService>();
+
+builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+builder.Services.AddScoped<AppointmentService>();
+
+builder.Services.AddScoped<ITransactionManager, EfTransactionManager>();
 
 var app = builder.Build();
 

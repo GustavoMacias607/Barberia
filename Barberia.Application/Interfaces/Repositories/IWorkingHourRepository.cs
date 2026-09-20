@@ -13,4 +13,8 @@ public interface IWorkingHourRepository
     TimeOnly endTime);
     Task<WorkingHour> CreateAsync(WorkingHour workingHour);
     Task DeleteAsync(int id);
+
+    Task<IEnumerable<WorkingHour>> GetByBarberAndDayAsync(
+    int barberId,
+    DayOfWeek dayOfWeek);
 }

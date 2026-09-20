@@ -10,5 +10,7 @@ public interface IBarberRepository
     Task<Barber> UpdateAsync(Barber barber);
     Task<Barber> ActivateAsync(Barber barber);
     Task<Barber> DeactivateAsync(Barber barber);
+
+    Task<IEnumerable<Barber>> GetActiveAsync();
 }
 

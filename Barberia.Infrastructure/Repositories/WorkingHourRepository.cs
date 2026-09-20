@@ -50,4 +50,11 @@ public class WorkingHourRepository : IWorkingHourRepository
             endTime > x.StartTime
         );
     }
+
+    public async Task<IEnumerable<WorkingHour>> GetByBarberAndDayAsync(int barberId, DayOfWeek dayOfWeek)
+    {
+        return await _dbContext.WorkingHours
+            .Where(x => x.BarberId == barberId && x.DayOfWeek == dayOfWeek)
+            .ToListAsync();
+    }
 }

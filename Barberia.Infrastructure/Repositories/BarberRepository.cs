@@ -42,5 +42,12 @@ public class BarberRepository : IBarberRepository
         await _dbContext.SaveChangesAsync();
         return barber;
     }
+
+    public async Task<IEnumerable<Barber>> GetActiveAsync()
+    {
+        return await _dbContext.Barbers
+            .Where(x => x.IsActive)
+            .ToListAsync();
+    }
 }
 
