@@ -15,5 +15,6 @@ public interface IAppointmentRepository
         DateTime date);
 
     Task<Appointment> CreateAsync(Appointment appointment);
-    Task<Appointment?> GetByIdAsync (int id);
+    Task<Appointment?> GetByIdAsync(int id);
+    Task<Appointment> UpdateAsync(Appointment appointment);
 }

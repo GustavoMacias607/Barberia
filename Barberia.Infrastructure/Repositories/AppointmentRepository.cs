@@ -62,4 +62,12 @@ public class AppointmentRepository : IAppointmentRepository
                 x.StartAt.AddMinutes(x.DurationMinutes) > startAt)
             .AnyAsync();
     }
+
+    public async Task<Appointment> UpdateAsync(Appointment appointment)
+    {
+        _dbContext.Appointments.Update(appointment);
+        await _dbContext.SaveChangesAsync();
+
+        return appointment;
+    }
 }

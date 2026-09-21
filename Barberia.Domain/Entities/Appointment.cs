@@ -23,5 +23,14 @@ public class Appointment
         Status = AppointmentStatus.Confirmed;
         CreatedAt = DateTime.Now;
     }
-}
 
+    public bool Cancel()
+    {
+        if(Status == AppointmentStatus.Completed)
+        {
+            return false;
+        }
+        Status = AppointmentStatus.Cancelled;
+        return true;
+    }
+}

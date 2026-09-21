@@ -91,4 +91,38 @@ public class AppointmentController : ControllerBase
             new { id = response.Id },
             response);
     }
+
+    [HttpPatch("{id}/cancel")]
+    public async Task<ActionResult<AppointmentResponse>> Cancel(int id)
+    {
+        var result = await _appointmentService.CancelAsync(id);
+
+        if (result.Status == CancelAppointmentStatus.NotFound)
+        {
+            return NotFound();
+        }
+
+        if (result.Status == CancelAppointmentStatus.CannotCancelCompleted)
+        {
+            return Conflict("Completed appointments cannot be cancelled");
+        }
+
+        if ( result.Status != CancelAppointmentStatus.Success)
+        {
+            return StatusCode(500);
+        }
+
+        AppointmentResponse response = new(
+            result.Appointment!.Id,
+            result.Appointment.CustomerId,
+            result.Appointment.BarberId,
+            result.Appointment.ServiceId,
+            result.Appointment.StartAt,
+            result.Appointment.DurationMinutes,
+            result.Appointment.Status,
+            result.Appointment.CreatedAt
+            );
+
+        return Ok(response);
+    }
 }
