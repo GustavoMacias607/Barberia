@@ -159,4 +159,26 @@ public class AppointmentService
 
         return new CancelAppointmentResult(CancelAppointmentStatus.Success, updated);
     }
+
+    public async Task<CompleteAppointmentResult> CompleteAsync(int id)
+    {
+        var appointment = await _appointmentRepository.GetByIdAsync(id);
+        if (appointment is null)
+        {
+            return new CompleteAppointmentResult(CompleteAppointmentStatus.NotFound, null);
+        }
+
+        var completed = appointment.Complete();
+
+        if (!completed)
+        {
+            return new CompleteAppointmentResult(
+                CompleteAppointmentStatus.CannotCompleteCancelled,
+                appointment);
+        }
+
+        var updated = await _appointmentRepository.UpdateAsync(appointment);
+
+        return new CompleteAppointmentResult(CompleteAppointmentStatus.Success, updated);
+    }
 }

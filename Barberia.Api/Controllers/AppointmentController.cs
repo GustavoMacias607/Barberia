@@ -125,4 +125,38 @@ public class AppointmentController : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpPatch("{id}/complete")]
+    public async Task<ActionResult<AppointmentResponse>> Complete(int id)
+    {
+        var result = await _appointmentService.CompleteAsync(id);
+
+        if (result.Status == CompleteAppointmentStatus.NotFound)
+        {
+            return NotFound();
+        }
+
+        if (result.Status == CompleteAppointmentStatus.CannotCompleteCancelled)
+        {
+            return Conflict("Cancelled appointments cannot be completed");
+        }
+
+        if (result.Status != CompleteAppointmentStatus.Success)
+        {
+            return StatusCode(500);
+        }
+
+        AppointmentResponse response = new(
+            result.Appointment!.Id,
+            result.Appointment.CustomerId,
+            result.Appointment.BarberId,
+            result.Appointment.ServiceId,
+            result.Appointment.StartAt,
+            result.Appointment.DurationMinutes,
+            result.Appointment.Status,
+            result.Appointment.CreatedAt
+            );
+
+        return Ok(response);
+    }
 }

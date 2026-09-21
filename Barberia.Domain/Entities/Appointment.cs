@@ -33,4 +33,14 @@ public class Appointment
         Status = AppointmentStatus.Cancelled;
         return true;
     }
+
+    public bool Complete()
+    {
+        if (Status == AppointmentStatus.Cancelled)
+        {
+            return false;
+        }
+        Status = AppointmentStatus.Completed;
+        return true;
+    }
 }
