@@ -1,5 +1,6 @@
 ﻿using Barberia.Application.DTOs.Appointment;
 using Barberia.Domain.Entities;
+using Barberia.Domain.Enums;
 
 namespace Barberia.Application.Interfaces.Repositories;
 
@@ -34,6 +35,7 @@ public interface IAppointmentRepository
     int? excludedAppointmentId = null);
 
     Task<IEnumerable<Appointment>> GetByDateAsync(
-       DateTime date,
-       int? barberId = null);
+        DateTime date,
+        int? barberId = null,
+        AppointmentStatus? status = null);
 }

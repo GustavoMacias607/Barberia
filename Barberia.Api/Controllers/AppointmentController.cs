@@ -1,6 +1,7 @@
 ﻿using Barberia.Application.DTOs.Appointment;
 using Barberia.Application.Enums;
 using Barberia.Application.Services;
+using Barberia.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Barberia.Api.Controllers;
@@ -19,11 +20,13 @@ public class AppointmentController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AppointmentResponse>>> GetByDate(
         [FromQuery] DateTime date,
-        [FromQuery] int? barberId = null)
+        [FromQuery] int? barberId = null,
+        [FromQuery] AppointmentStatus? status = null)
     {
         var appointments = await _appointmentService.GetByDateAsync(
             date,
-            barberId);
+            barberId,
+            status);
 
         var response = appointments.Select(appointment =>
             new AppointmentResponse(

@@ -4,6 +4,7 @@ using Barberia.Application.Interfaces.Repositories;
 using Barberia.Application.Interfaces.Transactions;
 using Barberia.Application.Results;
 using Barberia.Domain.Entities;
+using Barberia.Domain.Enums;
 
 namespace Barberia.Application.Services;
 
@@ -38,12 +39,14 @@ public class AppointmentService
     }
 
     public async Task<IEnumerable<Appointment>> GetByDateAsync(
-    DateTime date,
-    int? barberId = null)
+        DateTime date,
+        int? barberId = null,
+        AppointmentStatus? status = null)
     {
         return await _appointmentRepository.GetByDateAsync(
             date,
-            barberId);
+            barberId,
+            status);
     }
 
     public async Task<CreateAppointmentResult> CreateAsync(

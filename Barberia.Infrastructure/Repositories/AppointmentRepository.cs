@@ -114,8 +114,9 @@ public class AppointmentRepository : IAppointmentRepository
     }
 
     public async Task<IEnumerable<Appointment>> GetByDateAsync(
-    DateTime date,
-    int? barberId = null)
+        DateTime date,
+        int? barberId = null,
+        AppointmentStatus? status = null)
     {
         var dayStart = date.Date;
         var dayEnd = dayStart.AddDays(1);
@@ -129,6 +130,11 @@ public class AppointmentRepository : IAppointmentRepository
         if (barberId.HasValue)
         {
             query = query.Where(x => x.BarberId == barberId.Value);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(x => x.Status == status.Value);
         }
 
         return await query
