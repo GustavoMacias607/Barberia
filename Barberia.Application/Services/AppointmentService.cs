@@ -37,9 +37,13 @@ public class AppointmentService
         return await _appointmentRepository.GetByIdAsync(id);
     }
 
-    public async Task<IEnumerable<Appointment>> GetByDateAsync(DateTime date)
+    public async Task<IEnumerable<Appointment>> GetByDateAsync(
+    DateTime date,
+    int? barberId = null)
     {
-        return await _appointmentRepository.GetByDateAsync(date);
+        return await _appointmentRepository.GetByDateAsync(
+            date,
+            barberId);
     }
 
     public async Task<CreateAppointmentResult> CreateAsync(

@@ -16,12 +16,14 @@ public class AppointmentController : ControllerBase
     {
         _appointmentService = appointmentService;
     }
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AppointmentResponse>>> GetByDate(
-    [FromQuery] DateTime date)
+        [FromQuery] DateTime date,
+        [FromQuery] int? barberId = null)
     {
-        var appointments = await _appointmentService.GetByDateAsync(date);
+        var appointments = await _appointmentService.GetByDateAsync(
+            date,
+            barberId);
 
         var response = appointments.Select(appointment =>
             new AppointmentResponse(

@@ -4,6 +4,7 @@ using Barberia.Domain.Entities;
 namespace Barberia.Application.Interfaces.Repositories;
 
 public interface IAppointmentRepository
+
 {
     Task<bool> HasOverlappingConfirmedAppointmentAsync(
         int barberId,
@@ -32,5 +33,7 @@ public interface IAppointmentRepository
     DateTime endAt,
     int? excludedAppointmentId = null);
 
-    Task<IEnumerable<Appointment>> GetByDateAsync(DateTime date);
+    Task<IEnumerable<Appointment>> GetByDateAsync(
+       DateTime date,
+       int? barberId = null);
 }

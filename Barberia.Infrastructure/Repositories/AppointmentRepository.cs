@@ -113,16 +113,25 @@ public class AppointmentRepository : IAppointmentRepository
             .AnyAsync();
     }
 
-    public async Task<IEnumerable<Appointment>> GetByDateAsync(DateTime date)
+    public async Task<IEnumerable<Appointment>> GetByDateAsync(
+    DateTime date,
+    int? barberId = null)
     {
         var dayStart = date.Date;
         var dayEnd = dayStart.AddDays(1);
 
-        return await _dbContext.Appointments
+        var query = _dbContext.Appointments
             .AsNoTracking()
             .Where(x =>
                 x.StartAt >= dayStart &&
-                x.StartAt < dayEnd)
+                x.StartAt < dayEnd);
+
+        if (barberId.HasValue)
+        {
+            query = query.Where(x => x.BarberId == barberId.Value);
+        }
+
+        return await query
             .OrderBy(x => x.StartAt)
             .ToListAsync();
     }
