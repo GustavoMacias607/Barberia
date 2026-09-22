@@ -37,105 +37,78 @@ public class AppointmentService
         return await _appointmentRepository.GetByIdAsync(id);
     }
 
-    public async Task<CreateAppointmentResult> CreateAsync(CreateAppointmentRequest request)
+    public async Task<CreateAppointmentResult> CreateAsync(
+        CreateAppointmentRequest request)
     {
-
-        if (request.StartAt.Minute % 30 != 0 || request.StartAt.Second != 0 || request.StartAt.Millisecond != 0)
+        if (request.StartAt.Minute % 30 != 0 ||
+            request.StartAt.Second != 0 ||
+            request.StartAt.Millisecond != 0)
         {
-            return new CreateAppointmentResult(CreateAppointmentStatus.InvalidStartTime, null);
+            return new CreateAppointmentResult(
+                CreateAppointmentStatus.InvalidStartTime,
+                null);
         }
 
         if (request.StartAt < DateTime.Now)
         {
-            return new CreateAppointmentResult(CreateAppointmentStatus.InvalidStartTime, null);
+            return new CreateAppointmentResult(
+                CreateAppointmentStatus.InvalidStartTime,
+                null);
         }
 
         return await _transactionManager.ExecuteSerializableAsync(async () =>
         {
-            var customer = await _customerRepository.GetByIdAsync(request.CustomerId);
+            var customer = await _customerRepository
+                .GetByIdAsync(request.CustomerId);
+
             if (customer is null)
             {
-                return new CreateAppointmentResult(CreateAppointmentStatus.CustomerNotFound, null);
+                return new CreateAppointmentResult(
+                    CreateAppointmentStatus.CustomerNotFound,
+                    null);
             }
 
-            var service = await _serviceRepository.GetByIdAsync(request.ServiceId);
+            var service = await _serviceRepository
+                .GetByIdAsync(request.ServiceId);
+
             if (service is null)
             {
-                return new CreateAppointmentResult(CreateAppointmentStatus.ServiceNotFound, null);
+                return new CreateAppointmentResult(
+                    CreateAppointmentStatus.ServiceNotFound,
+                    null);
             }
+
             if (!service.IsActive)
             {
-                return new CreateAppointmentResult(CreateAppointmentStatus.ServiceInactive, null);
+                return new CreateAppointmentResult(
+                    CreateAppointmentStatus.ServiceInactive,
+                    null);
             }
 
-            var endAt = request.StartAt.AddMinutes(service.DurationMinutes);
+            var selectedBarber = await FindAvailableBarberAsync(
+                request.StartAt,
+                service.DurationMinutes);
 
-            var availableBarbers = new List<Barber>();
-
-            var activeBarbers = await _barberRepository.GetActiveAsync();
-
-            foreach (var barber in activeBarbers)
+            if (selectedBarber is null)
             {
-                var schedules = await _workingHourRepository.GetByBarberAndDayAsync(barber.Id, request.StartAt.DayOfWeek);
-                foreach (var schedule in schedules)
-                {
-                    var scheduleStartAt =
-                        request.StartAt.Date.Add(schedule.StartTime.ToTimeSpan());
-
-                    var scheduleEndAt =
-                        request.StartAt.Date.Add(schedule.EndTime.ToTimeSpan());
-
-                    if (request.StartAt >= scheduleStartAt &&
-                        endAt <= scheduleEndAt)
-                    {
-                        availableBarbers.Add(barber);
-                        break;
-                    }
-                }
+                return new CreateAppointmentResult(
+                    CreateAppointmentStatus.NoAvailability,
+                    null);
             }
-
-            var freeBarbers = new List<Barber>();
-
-            foreach (var barber in availableBarbers)
-            {
-                var hasOverlapping = await _appointmentRepository.HasOverlappingConfirmedAppointmentAsync(barber.Id, request.StartAt, endAt);
-                if (!hasOverlapping)
-                {
-                    freeBarbers.Add(barber);
-                }
-            }
-
-            if (freeBarbers.Count == 0)
-            {
-                return new CreateAppointmentResult(CreateAppointmentStatus.NoAvailability, null);
-            }
-
-            var barberIds = freeBarbers.Select(x => x.Id);
-
-            var confirmedAppointmentCounts = await _appointmentRepository.GetConfirmedAppointmentCountsAsync(barberIds, request.StartAt.Date);
-
-            var barberWithLeastAppointments = freeBarbers
-                .Select(barber => new
-                {
-                    Barber = barber,
-                    AppointmentCount = confirmedAppointmentCounts
-                        .FirstOrDefault(x => x.BarberId == barber.Id)?.ConfirmedCount ?? 0
-                })
-                .OrderBy(x => x.AppointmentCount)
-                .ThenBy(x => x.Barber.Name, StringComparer.OrdinalIgnoreCase)
-                .First();
 
             Appointment appointment = new(
                 customer.Id,
-                barberWithLeastAppointments.Barber.Id,
+                selectedBarber.Id,
                 service.Id,
                 request.StartAt,
                 service.DurationMinutes);
 
+            var created = await _appointmentRepository
+                .CreateAsync(appointment);
 
-            var created = await _appointmentRepository.CreateAsync(appointment);
-
-            return new CreateAppointmentResult(CreateAppointmentStatus.Success, created);
+            return new CreateAppointmentResult(
+                CreateAppointmentStatus.Success,
+                created);
         });
     }
 
@@ -180,5 +153,158 @@ public class AppointmentService
         var updated = await _appointmentRepository.UpdateAsync(appointment);
 
         return new CompleteAppointmentResult(CompleteAppointmentStatus.Success, updated);
+    }
+
+    private async Task<Barber?> FindAvailableBarberAsync(
+        DateTime startAt,
+        int durationMinutes,
+        int? excludedAppointmentId = null)
+    {
+        var endAt = startAt.AddMinutes(durationMinutes);
+
+        var availableBarbers = new List<Barber>();
+
+        var activeBarbers = await _barberRepository.GetActiveAsync();
+
+        foreach (var barber in activeBarbers)
+        {
+            var schedules = await _workingHourRepository
+                .GetByBarberAndDayAsync(
+                    barber.Id,
+                    startAt.DayOfWeek);
+
+            foreach (var schedule in schedules)
+            {
+                var scheduleStartAt =
+                    startAt.Date.Add(schedule.StartTime.ToTimeSpan());
+
+                var scheduleEndAt =
+                    startAt.Date.Add(schedule.EndTime.ToTimeSpan());
+
+                if (startAt >= scheduleStartAt &&
+                    endAt <= scheduleEndAt)
+                {
+                    availableBarbers.Add(barber);
+                    break;
+                }
+            }
+        }
+
+        var freeBarbers = new List<Barber>();
+
+        foreach (var barber in availableBarbers)
+        {
+            var hasOverlapping =
+                await _appointmentRepository
+                    .HasOverlappingConfirmedAppointmentAsync(
+                        barber.Id,
+                        startAt,
+                        endAt,
+                        excludedAppointmentId);
+
+            if (!hasOverlapping)
+            {
+                freeBarbers.Add(barber);
+            }
+        }
+
+        if (freeBarbers.Count == 0)
+        {
+            return null;
+        }
+
+        var barberIds = freeBarbers
+            .Select(x => x.Id);
+
+        var confirmedAppointmentCounts =
+            await _appointmentRepository
+                .GetConfirmedAppointmentCountsAsync(
+                    barberIds,
+                    startAt.Date,
+                    excludedAppointmentId);
+
+        return freeBarbers
+            .Select(barber => new
+            {
+                Barber = barber,
+                AppointmentCount = confirmedAppointmentCounts
+                    .FirstOrDefault(x => x.BarberId == barber.Id)?
+                    .ConfirmedCount ?? 0
+            })
+            .OrderBy(x => x.AppointmentCount)
+            .ThenBy(
+                x => x.Barber.Name,
+                StringComparer.OrdinalIgnoreCase)
+            .First()
+            .Barber;
+    }
+
+    public async Task<RescheduleAppointmentResult> RescheduleAsync(
+        int id,
+        RescheduleAppointmentRequest request)
+    {
+        if (request.StartAt.Minute % 30 != 0 ||
+            request.StartAt.Second != 0 ||
+            request.StartAt.Millisecond != 0)
+        {
+            return new RescheduleAppointmentResult(
+                RescheduleAppointmentStatus.InvalidStartTime,
+                null);
+        }
+
+        if (request.StartAt < DateTime.Now)
+        {
+            return new RescheduleAppointmentResult(
+                RescheduleAppointmentStatus.InvalidStartTime,
+                null);
+        }
+
+        return await _transactionManager.ExecuteSerializableAsync(async () =>
+        {
+            var appointment = await _appointmentRepository.GetByIdAsync(id);
+
+            if (appointment is null)
+            {
+                return new RescheduleAppointmentResult(
+                    RescheduleAppointmentStatus.NotFound,
+                    null);
+            }
+
+            if (!appointment.CanBeRescheduled)
+            {
+                return new RescheduleAppointmentResult(
+                    RescheduleAppointmentStatus.CannotReschedule,
+                    appointment);
+            }
+
+            var selectedBarber = await FindAvailableBarberAsync(
+                request.StartAt,
+                appointment.DurationMinutes,
+                appointment.Id);
+
+            if (selectedBarber is null)
+            {
+                return new RescheduleAppointmentResult(
+                    RescheduleAppointmentStatus.NoAvailability,
+                    appointment);
+            }
+
+            var rescheduled = appointment.Reschedule(
+                selectedBarber.Id,
+                request.StartAt);
+
+            if (!rescheduled)
+            {
+                return new RescheduleAppointmentResult(
+                    RescheduleAppointmentStatus.CannotReschedule,
+                    appointment);
+            }
+
+            var updated = await _appointmentRepository.UpdateAsync(appointment);
+
+            return new RescheduleAppointmentResult(
+                RescheduleAppointmentStatus.Success,
+                updated);
+        });
     }
 }

@@ -159,4 +159,50 @@ public class AppointmentController : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpPatch("{id}/reschedule")]
+    public async Task<ActionResult<AppointmentResponse>> Reschedule(
+        int id,
+        RescheduleAppointmentRequest request)
+    {
+        var result = await _appointmentService.RescheduleAsync(id, request);
+
+        if (result.Status == RescheduleAppointmentStatus.NotFound)
+        {
+            return NotFound();
+        }
+
+        if (result.Status == RescheduleAppointmentStatus.CannotReschedule)
+        {
+            return Conflict("Only confirmed appointments can be rescheduled");
+        }
+
+        if (result.Status == RescheduleAppointmentStatus.InvalidStartTime)
+        {
+            return BadRequest("Invalid start time");
+        }
+
+        if (result.Status == RescheduleAppointmentStatus.NoAvailability)
+        {
+            return Conflict("No availability");
+        }
+
+        if (result.Status != RescheduleAppointmentStatus.Success)
+        {
+            return StatusCode(500);
+        }
+
+        AppointmentResponse response = new(
+            result.Appointment!.Id,
+            result.Appointment.CustomerId,
+            result.Appointment.BarberId,
+            result.Appointment.ServiceId,
+            result.Appointment.StartAt,
+            result.Appointment.DurationMinutes,
+            result.Appointment.Status,
+            result.Appointment.CreatedAt
+        );
+
+        return Ok(response);
+    }
 }

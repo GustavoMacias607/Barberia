@@ -43,4 +43,19 @@ public class Appointment
         Status = AppointmentStatus.Completed;
         return true;
     }
+
+    public bool Reschedule(int barberId, DateTime startAt)
+    {
+        if (Status != AppointmentStatus.Confirmed)
+        {
+            return false;
+        }
+
+        BarberId = barberId;
+        StartAt = startAt;
+
+        return true;
+    }
+
+    public bool CanBeRescheduled => Status == AppointmentStatus.Confirmed;
 }

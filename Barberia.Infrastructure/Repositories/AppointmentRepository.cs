@@ -30,10 +30,10 @@ public class AppointmentRepository : IAppointmentRepository
         return appointment;
     }
 
-    public async Task<IEnumerable<BarberAppointmentCount>>
-       GetConfirmedAppointmentCountsAsync(
-           IEnumerable<int> barberIds,
-           DateTime date)
+    public async Task<IEnumerable<BarberAppointmentCount>> GetConfirmedAppointmentCountsAsync(
+     IEnumerable<int> barberIds,
+     DateTime date,
+     int? excludedAppointmentId = null)
     {
         var dayStart = date.Date;
         var dayEnd = dayStart.AddDays(1);
@@ -41,6 +41,9 @@ public class AppointmentRepository : IAppointmentRepository
         return await _dbContext.Appointments
             .Where(x => barberIds.Contains(x.BarberId))
             .Where(x => x.Status == AppointmentStatus.Confirmed)
+            .Where(x =>
+                excludedAppointmentId == null ||
+                x.Id != excludedAppointmentId.Value)
             .Where(x => x.StartAt >= dayStart && x.StartAt < dayEnd)
             .GroupBy(x => x.BarberId)
             .Select(x => new BarberAppointmentCount(
@@ -50,13 +53,17 @@ public class AppointmentRepository : IAppointmentRepository
     }
 
     public async Task<bool> HasOverlappingConfirmedAppointmentAsync(
-      int barberId,
-      DateTime startAt,
-      DateTime endAt)
+        int barberId,
+        DateTime startAt,
+        DateTime endAt,
+        int? excludedAppointmentId = null)
     {
         return await _dbContext.Appointments
             .Where(x => x.BarberId == barberId)
             .Where(x => x.Status == AppointmentStatus.Confirmed)
+            .Where(x =>
+                excludedAppointmentId == null ||
+                x.Id != excludedAppointmentId.Value)
             .Where(x =>
                 x.StartAt < endAt &&
                 x.StartAt.AddMinutes(x.DurationMinutes) > startAt)
