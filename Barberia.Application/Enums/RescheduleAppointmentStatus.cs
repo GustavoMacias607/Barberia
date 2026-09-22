@@ -6,5 +6,6 @@ public enum RescheduleAppointmentStatus
     NotFound,
     CannotReschedule,
     InvalidStartTime,
+    CustomerHasOverlappingAppointment,
     NoAvailability
 }

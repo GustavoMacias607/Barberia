@@ -94,4 +94,22 @@ public class AppointmentRepository : IAppointmentRepository
                 x.StartAt.AddMinutes(x.DurationMinutes) > dayStart)
             .ToListAsync();
     }
+
+    public async Task<bool> HasOverlappingConfirmedAppointmentForCustomerAsync(
+    int customerId,
+    DateTime startAt,
+    DateTime endAt,
+    int? excludedAppointmentId = null)
+    {
+        return await _dbContext.Appointments
+            .Where(x => x.CustomerId == customerId)
+            .Where(x => x.Status == AppointmentStatus.Confirmed)
+            .Where(x =>
+                excludedAppointmentId == null ||
+                x.Id != excludedAppointmentId.Value)
+            .Where(x =>
+                x.StartAt < endAt &&
+                x.StartAt.AddMinutes(x.DurationMinutes) > startAt)
+            .AnyAsync();
+    }
 }

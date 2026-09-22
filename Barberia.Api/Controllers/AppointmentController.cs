@@ -65,6 +65,11 @@ public class AppointmentController : ControllerBase
             return BadRequest("Invalid start time");
         }
 
+        if (result.Status == CreateAppointmentStatus.CustomerHasOverlappingAppointment)
+        {
+            return Conflict("Customer already has an overlapping appointment");
+        }
+
         if (result.Status == CreateAppointmentStatus.NoAvailability)
         {
             return Conflict("No Availability");
@@ -180,6 +185,11 @@ public class AppointmentController : ControllerBase
         if (result.Status == RescheduleAppointmentStatus.InvalidStartTime)
         {
             return BadRequest("Invalid start time");
+        }
+
+        if (result.Status == RescheduleAppointmentStatus.CustomerHasOverlappingAppointment)
+        {
+            return Conflict("Customer already has an overlapping appointment");
         }
 
         if (result.Status == RescheduleAppointmentStatus.NoAvailability)

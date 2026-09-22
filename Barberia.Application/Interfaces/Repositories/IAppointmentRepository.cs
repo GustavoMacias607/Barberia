@@ -25,4 +25,10 @@ public interface IAppointmentRepository
     Task<IEnumerable<Appointment>> GetConfirmedByBarbersAndDateAsync(
         IEnumerable<int> barberIds,
         DateTime date);
+
+    Task<bool> HasOverlappingConfirmedAppointmentForCustomerAsync(
+    int customerId,
+    DateTime startAt,
+    DateTime endAt,
+    int? excludedAppointmentId = null);
 }

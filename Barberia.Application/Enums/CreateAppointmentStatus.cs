@@ -2,10 +2,11 @@
 
 public enum CreateAppointmentStatus
 {
+    Success,
     CustomerNotFound,
     ServiceNotFound,
     ServiceInactive,
     InvalidStartTime,
-    NoAvailability,
-    Success
+    CustomerHasOverlappingAppointment,
+    NoAvailability
 }

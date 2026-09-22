@@ -85,6 +85,22 @@ public class AppointmentService
                     null);
             }
 
+            var endAt = request.StartAt.AddMinutes(service.DurationMinutes);
+
+            var customerHasOverlappingAppointment =
+                await _appointmentRepository
+                    .HasOverlappingConfirmedAppointmentForCustomerAsync(
+                        customer.Id,
+                        request.StartAt,
+                        endAt);
+
+            if (customerHasOverlappingAppointment)
+            {
+                return new CreateAppointmentResult(
+                    CreateAppointmentStatus.CustomerHasOverlappingAppointment,
+                    null);
+            }
+
             var selectedBarber = await FindAvailableBarberAsync(
                 request.StartAt,
                 service.DurationMinutes);
@@ -274,6 +290,23 @@ public class AppointmentService
             {
                 return new RescheduleAppointmentResult(
                     RescheduleAppointmentStatus.CannotReschedule,
+                    appointment);
+            }
+
+            var endAt = request.StartAt.AddMinutes(appointment.DurationMinutes);
+
+            var customerHasOverlappingAppointment =
+                await _appointmentRepository
+                    .HasOverlappingConfirmedAppointmentForCustomerAsync(
+                        appointment.CustomerId,
+                        request.StartAt,
+                        endAt,
+                        appointment.Id);
+
+            if (customerHasOverlappingAppointment)
+            {
+                return new RescheduleAppointmentResult(
+                    RescheduleAppointmentStatus.CustomerHasOverlappingAppointment,
                     appointment);
             }
 
