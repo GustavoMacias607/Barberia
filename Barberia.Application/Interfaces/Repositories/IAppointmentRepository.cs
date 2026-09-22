@@ -31,4 +31,6 @@ public interface IAppointmentRepository
     DateTime startAt,
     DateTime endAt,
     int? excludedAppointmentId = null);
+
+    Task<IEnumerable<Appointment>> GetByDateAsync(DateTime date);
 }

@@ -17,6 +17,27 @@ public class AppointmentController : ControllerBase
         _appointmentService = appointmentService;
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<AppointmentResponse>>> GetByDate(
+    [FromQuery] DateTime date)
+    {
+        var appointments = await _appointmentService.GetByDateAsync(date);
+
+        var response = appointments.Select(appointment =>
+            new AppointmentResponse(
+                appointment.Id,
+                appointment.CustomerId,
+                appointment.BarberId,
+                appointment.ServiceId,
+                appointment.StartAt,
+                appointment.DurationMinutes,
+                appointment.Status,
+                appointment.CreatedAt
+            ));
+
+        return Ok(response);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<AppointmentResponse>> GetById(int id)
     {
@@ -168,8 +189,7 @@ public class AppointmentController : ControllerBase
     [HttpPatch("{id}/reschedule")]
     public async Task<ActionResult<AppointmentResponse>> Reschedule(
         int id,
-        RescheduleAppointmentRequest request)
-    {
+        RescheduleAppointmentRequest request){
         var result = await _appointmentService.RescheduleAsync(id, request);
 
         if (result.Status == RescheduleAppointmentStatus.NotFound)

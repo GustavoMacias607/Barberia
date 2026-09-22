@@ -112,4 +112,18 @@ public class AppointmentRepository : IAppointmentRepository
                 x.StartAt.AddMinutes(x.DurationMinutes) > startAt)
             .AnyAsync();
     }
+
+    public async Task<IEnumerable<Appointment>> GetByDateAsync(DateTime date)
+    {
+        var dayStart = date.Date;
+        var dayEnd = dayStart.AddDays(1);
+
+        return await _dbContext.Appointments
+            .AsNoTracking()
+            .Where(x =>
+                x.StartAt >= dayStart &&
+                x.StartAt < dayEnd)
+            .OrderBy(x => x.StartAt)
+            .ToListAsync();
+    }
 }
