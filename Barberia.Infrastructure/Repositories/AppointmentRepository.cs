@@ -70,4 +70,21 @@ public class AppointmentRepository : IAppointmentRepository
 
         return appointment;
     }
+
+    public async Task<IEnumerable<Appointment>> GetConfirmedByBarbersAndDateAsync(
+    IEnumerable<int> barberIds,
+    DateTime date)
+    {
+        var dayStart = date.Date;
+        var dayEnd = dayStart.AddDays(1);
+
+        return await _dbContext.Appointments
+            .AsNoTracking()
+            .Where(x => barberIds.Contains(x.BarberId))
+            .Where(x => x.Status == AppointmentStatus.Confirmed)
+            .Where(x =>
+                x.StartAt < dayEnd &&
+                x.StartAt.AddMinutes(x.DurationMinutes) > dayStart)
+            .ToListAsync();
+    }
 }

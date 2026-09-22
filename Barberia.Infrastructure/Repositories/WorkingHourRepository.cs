@@ -57,4 +57,16 @@ public class WorkingHourRepository : IWorkingHourRepository
             .Where(x => x.BarberId == barberId && x.DayOfWeek == dayOfWeek)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<WorkingHour>> GetByBarbersAndDayAsync(
+    IEnumerable<int> barberIds,
+    DayOfWeek dayOfWeek)
+    {
+        return await _dbContext.WorkingHours
+            .AsNoTracking()
+            .Where(x =>
+                barberIds.Contains(x.BarberId) &&
+                x.DayOfWeek == dayOfWeek)
+            .ToListAsync();
+    }
 }

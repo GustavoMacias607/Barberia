@@ -17,4 +17,8 @@ public interface IWorkingHourRepository
     Task<IEnumerable<WorkingHour>> GetByBarberAndDayAsync(
     int barberId,
     DayOfWeek dayOfWeek);
+
+    Task<IEnumerable<WorkingHour>> GetByBarbersAndDayAsync(
+    IEnumerable<int> barberIds,
+    DayOfWeek dayOfWeek);
 }

@@ -17,4 +17,8 @@ public interface IAppointmentRepository
     Task<Appointment> CreateAsync(Appointment appointment);
     Task<Appointment?> GetByIdAsync(int id);
     Task<Appointment> UpdateAsync(Appointment appointment);
+
+    Task<IEnumerable<Appointment>> GetConfirmedByBarbersAndDateAsync(
+    IEnumerable<int> barberIds,
+    DateTime date);
 }

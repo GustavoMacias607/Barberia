@@ -35,6 +35,8 @@ builder.Services.AddScoped<AppointmentService>();
 
 builder.Services.AddScoped<ITransactionManager, EfTransactionManager>();
 
+builder.Services.AddScoped<AvailabilityService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
