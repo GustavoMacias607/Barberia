@@ -39,4 +39,7 @@ public interface IAppointmentRepository
     DateTime date,
     int? barberId = null,
     AppointmentStatus? status = null);
+
+    Task<IEnumerable<AppointmentAgendaItem>> GetByCustomerIdAsync(
+    int customerId);
 }

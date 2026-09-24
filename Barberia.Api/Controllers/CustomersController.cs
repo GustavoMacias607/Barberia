@@ -1,4 +1,5 @@
-﻿using Barberia.Application.DTOs.Customers;
+﻿using Barberia.Application.DTOs.Appointments;
+using Barberia.Application.DTOs.Customers;
 using Barberia.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,14 @@ namespace Barberia.Api.Controllers;
 public class CustomersController : ControllerBase
 {
     private readonly CustomerService _customerService;
+    private readonly AppointmentService _appointmentService;
 
-    public CustomersController(CustomerService customerService)
+    public CustomersController(
+        CustomerService customerService,
+        AppointmentService appointmentService)
     {
         _customerService = customerService;
+        _appointmentService = appointmentService;
     }
 
     [HttpGet]
@@ -45,6 +50,20 @@ public class CustomersController : ControllerBase
            result.CreatedAt
        );
         return Ok(response);
+    }
+
+    [HttpGet("{id}/appointments")]
+    public async Task<ActionResult<IEnumerable<AppointmentAgendaItem>>> GetAppointments(
+    int id)
+    {
+        var appointments = await _appointmentService.GetByCustomerIdAsync(id);
+
+        if (appointments is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(appointments);
     }
 
     [HttpPost]

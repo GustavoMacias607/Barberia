@@ -31,6 +31,36 @@ public class AppointmentRepository : IAppointmentRepository
         return appointment;
     }
 
+    public async Task<IEnumerable<AppointmentAgendaItem>> GetByCustomerIdAsync(
+    int customerId)
+    {
+        var query =
+            from appointment in _dbContext.Appointments.AsNoTracking()
+            join customer in _dbContext.Customers.AsNoTracking()
+                on appointment.CustomerId equals customer.Id
+            join barber in _dbContext.Barbers.AsNoTracking()
+                on appointment.BarberId equals barber.Id
+            join service in _dbContext.Services.AsNoTracking()
+                on appointment.ServiceId equals service.Id
+            where appointment.CustomerId == customerId
+            orderby appointment.StartAt descending
+            select new AppointmentAgendaItem(
+                appointment.Id,
+                appointment.CustomerId,
+                customer.Name,
+                appointment.BarberId,
+                barber.Name,
+                appointment.ServiceId,
+                service.Name,
+                appointment.StartAt,
+                appointment.DurationMinutes,
+                appointment.Status,
+                appointment.CreatedAt
+            );
+
+        return await query.ToListAsync();
+    }
+
     public async Task<IEnumerable<BarberAppointmentCount>> GetConfirmedAppointmentCountsAsync(
      IEnumerable<int> barberIds,
      DateTime date,
