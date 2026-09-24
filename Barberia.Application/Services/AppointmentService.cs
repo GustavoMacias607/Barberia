@@ -1,4 +1,5 @@
 ﻿using Barberia.Application.DTOs.Appointment;
+using Barberia.Application.DTOs.Appointments;
 using Barberia.Application.Enums;
 using Barberia.Application.Interfaces.Repositories;
 using Barberia.Application.Interfaces.Transactions;
@@ -38,12 +39,12 @@ public class AppointmentService
         return await _appointmentRepository.GetByIdAsync(id);
     }
 
-    public async Task<IEnumerable<Appointment>> GetByDateAsync(
-        DateTime date,
-        int? barberId = null,
-        AppointmentStatus? status = null)
+    public async Task<IEnumerable<AppointmentAgendaItem>> GetAgendaByDateAsync(
+    DateTime date,
+    int? barberId = null,
+    AppointmentStatus? status = null)
     {
-        return await _appointmentRepository.GetByDateAsync(
+        return await _appointmentRepository.GetAgendaByDateAsync(
             date,
             barberId,
             status);

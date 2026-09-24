@@ -1,4 +1,5 @@
 ﻿using Barberia.Application.DTOs.Appointment;
+using Barberia.Application.DTOs.Appointments;
 using Barberia.Application.Interfaces.Repositories;
 using Barberia.Domain.Entities;
 using Barberia.Domain.Enums;
@@ -113,32 +114,59 @@ public class AppointmentRepository : IAppointmentRepository
             .AnyAsync();
     }
 
-    public async Task<IEnumerable<Appointment>> GetByDateAsync(
-        DateTime date,
-        int? barberId = null,
-        AppointmentStatus? status = null)
+    public async Task<IEnumerable<AppointmentAgendaItem>> GetAgendaByDateAsync(
+    DateTime date,
+    int? barberId = null,
+    AppointmentStatus? status = null)
     {
         var dayStart = date.Date;
         var dayEnd = dayStart.AddDays(1);
 
-        var query = _dbContext.Appointments
-            .AsNoTracking()
-            .Where(x =>
-                x.StartAt >= dayStart &&
-                x.StartAt < dayEnd);
+        var query =
+            from appointment in _dbContext.Appointments.AsNoTracking()
+            join customer in _dbContext.Customers.AsNoTracking()
+                on appointment.CustomerId equals customer.Id
+            join barber in _dbContext.Barbers.AsNoTracking()
+                on appointment.BarberId equals barber.Id
+            join service in _dbContext.Services.AsNoTracking()
+                on appointment.ServiceId equals service.Id
+            where appointment.StartAt >= dayStart
+                  && appointment.StartAt < dayEnd
+            select new
+            {
+                Appointment = appointment,
+                CustomerName = customer.Name,
+                BarberName = barber.Name,
+                ServiceName = service.Name
+            };
 
         if (barberId.HasValue)
         {
-            query = query.Where(x => x.BarberId == barberId.Value);
+            query = query.Where(x =>
+                x.Appointment.BarberId == barberId.Value);
         }
 
         if (status.HasValue)
         {
-            query = query.Where(x => x.Status == status.Value);
+            query = query.Where(x =>
+                x.Appointment.Status == status.Value);
         }
 
         return await query
-            .OrderBy(x => x.StartAt)
+            .OrderBy(x => x.Appointment.StartAt)
+            .Select(x => new AppointmentAgendaItem(
+                x.Appointment.Id,
+                x.Appointment.CustomerId,
+                x.CustomerName,
+                x.Appointment.BarberId,
+                x.BarberName,
+                x.Appointment.ServiceId,
+                x.ServiceName,
+                x.Appointment.StartAt,
+                x.Appointment.DurationMinutes,
+                x.Appointment.Status,
+                x.Appointment.CreatedAt
+            ))
             .ToListAsync();
     }
 }
