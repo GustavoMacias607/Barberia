@@ -40,14 +40,27 @@ public class AppointmentService
     }
 
     public async Task<IEnumerable<AppointmentAgendaItem>> GetAgendaByDateAsync(
-    DateTime date,
-    int? barberId = null,
+        DateTime date,
+        int? barberId = null,
     AppointmentStatus? status = null)
     {
         return await _appointmentRepository.GetAgendaByDateAsync(
             date,
             barberId,
             status);
+    }
+
+    public async Task<IEnumerable<AppointmentAgendaItem>?> GetByCustomerIdAsync(
+        int customerId)
+    {
+        var customer = await _customerRepository.GetByIdAsync(customerId);
+
+        if (customer is null)
+        {
+            return null;
+        }
+
+        return await _appointmentRepository.GetByCustomerIdAsync(customerId);
     }
 
     public async Task<CreateAppointmentResult> CreateAsync(
